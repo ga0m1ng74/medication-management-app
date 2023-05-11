@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 
 import { GiMedicines } from 'react-icons/gi'
-import { Layout, Menu, Button, theme, Dropdown, Space } from 'antd';
+import { Layout, Menu, Button, theme, Dropdown, Space, Breadcrumb } from 'antd';
 import type { MenuProps } from 'antd';
 import { logoImg } from '../utils/Img'
 
@@ -75,10 +75,32 @@ const sideMenuList = [
     label: 'User',
   }
 ]
+/**
+ * side menu when refresh page will lost highlight
+ * @param key from router get current pathname
+ * @returns  from sideMenuList find the right path for MyLayout component: defaultOpenKeys & defaultSelectedKeys
+ */
+const refreshPagePath = (key: string) => {
+  const result: string[] = []
+
+  const findPath = (arr: any) => {
+    arr.forEach((element: any) => {
+      if (key.includes(element.key)) {
+        result.push(element.key)
+        if (element.children) findPath(element.children)
+      }
+    });
+  }
+  findPath(sideMenuList)
+  return result;
+}
 
 const MyLayout = ({ children }: any) => {
   const [collapsed, setCollapsed] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  //get pathname from router
+  const { pathname } = useLocation()
+  const RefreshPath = refreshPagePath(pathname)
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -92,7 +114,8 @@ const MyLayout = ({ children }: any) => {
         <Menu
           theme="dark"
           mode="inline"
-          defaultSelectedKeys={['1']}
+          defaultOpenKeys={RefreshPath}
+          defaultSelectedKeys={RefreshPath}
           onClick={({ key }) => {
             // console.log(key);
             navigate(key)
