@@ -4,3 +4,12 @@
   
   font-family: 'Poppins', sans-serif;
 }
+
+.system-title{
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.drop-down-menu{
+  float: right;
+  margin-right: 20px;
+}
