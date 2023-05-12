@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MyUpload from '../../components/MyUpload'
 import { Card, Button, Form, Input, Table, Space, Modal, message } from 'antd'
 import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { useForm } from 'antd/es/form/Form';
+import {loadDataAPI} from '../../service/medicine-categories'
 
 export default function MedicineCategory() {
     /**
@@ -10,6 +10,10 @@ export default function MedicineCategory() {
      */
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    /**
+     * 
+     */
+    const [query,SetQuery] =useState({})
     /**
      * modal 'ok' button and 'cancel' button
      */
@@ -24,6 +28,20 @@ export default function MedicineCategory() {
      * this method can get form data on submit
      */
     const [formData] = Form.useForm()
+    
+    /**
+     * listening query's change
+     */
+    useEffect(() => {
+      
+    loadDataAPI(query).then(result=>{
+        console.log(result)
+    })
+      return () => {
+        
+      }
+    }, [query])
+    
 
     return (
         <>

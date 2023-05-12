@@ -1,8 +1,13 @@
 import { post } from '../utils/Request'
 
 type loginData ={
-    username:string,
+    userName:string,
     password:string,
 }
 
-export const loginAPI = (data:loginData) => post('',data)
+/**
+ * login api
+ * @param data 
+ * @returns 
+ */
+export const loginAPI = (data:loginData) => post('auth/admin_login',data)

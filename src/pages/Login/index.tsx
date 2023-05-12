@@ -1,6 +1,8 @@
 import {useNavigate} from 'react-router-dom'
+import {loginAPI} from '../../service/auth'
 import { Row, Col, Card, Form, Input, Button, message } from 'antd'
 import { loginImg } from '../../utils/Img'
+import { setToken } from '../../utils/Request'
 
 export default function LoginIndex() {
 
@@ -21,25 +23,32 @@ export default function LoginIndex() {
                         }
                     }}
                     // form submit and get username and password 
-                    onFinish={(values)=>{
+                    onFinish={async (values)=>{
                         console.log(values);
-                        message.success('login success')
-                        navigate('/admin/dashboard')
+                        const result = await loginAPI(values)
+                        console.log(result);
+                        if(result.success){
+                            message.success('login success')
+                            setToken(result.data)
+                            navigate('/admin/dashboard')
+                        }else{
+                            message.error(result.errorMessage)
+                        }
                     }}
                     >
-                        <Form.Item label='Username' name='username'
+                        <Form.Item label='Username' name='userName'
                         rules={[{
                             required:true,
                             message:'please check your username!'
                         }]}>
-                            <Input placeholder='admin@test.com' />
+                            <Input placeholder='admin' />
                         </Form.Item>
                         <Form.Item label='Password' name='password'
                         rules={[{
                             required:true,
                             message:'please check your password!'
                         }]}>
-                            <Input.Password placeholder='123456' />
+                            <Input.Password placeholder='admin' />
                         </Form.Item>
                         <Form.Item>
                             <Button htmlType='submit' type='primary' style={{
