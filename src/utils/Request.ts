@@ -11,7 +11,7 @@ export const getToken = () => sessionStorage.getItem('token')
 /**
  * server url
  */
-const serverUrl = 'http://localhost:3006'
+export const serverUrl = 'http://localhost:3006'
 
 const instance = axios.create({
     baseURL: serverUrl,

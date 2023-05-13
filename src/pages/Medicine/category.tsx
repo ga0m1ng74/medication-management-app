@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
 import MyUpload from '../../components/MyUpload'
 import { Card, Button, Form, Input, Table, Space, Modal, message } from 'antd'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import {loadDataAPI} from '../../service/medicine-categories'
+import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { loadDataAPI,InsertAPI,updateByIdAPI,deleteByIdAPI } from '../../service/medicine-categories'
+import { defaultImg } from '../../utils/Img';
+
 
 export default function MedicineCategory() {
     /**
      * modal show or hidden
      */
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     /**
-     * 
+     * medicine query data
      */
-    const [query,SetQuery] =useState({})
+    const [query, setQuery] = useState({})
+    const [data, setData] = useState([])
     /**
      * modal 'ok' button and 'cancel' button
      */
@@ -28,20 +30,19 @@ export default function MedicineCategory() {
      * this method can get form data on submit
      */
     const [formData] = Form.useForm()
-    
+
     /**
      * listening query's change
      */
     useEffect(() => {
-      
-    loadDataAPI(query).then(result=>{
-        console.log(result)
-    })
-      return () => {
-        
-      }
+        loadDataAPI(query).then(result => {
+            console.log(result)
+            setData(result.data?.list)
+        })
+        return () => {
+        }
     }, [query])
-    
+
 
     return (
         <>
@@ -51,7 +52,7 @@ export default function MedicineCategory() {
                 }}></Button>
             </>}>
                 <Space direction='vertical' style={{ width: '100%' }}>
-                    <Form layout='inline' onFinish={(values)=>{
+                    <Form layout='inline' onFinish={(values) => {
                         message.success('query success')
                     }}>
                         <Form.Item label='Name'>
@@ -62,26 +63,52 @@ export default function MedicineCategory() {
                         </Form.Item>
                     </Form>
 
-                    <Table columns={[{
-                        title: 'Number',
-                        align: 'center',
-                        width: 80
-                    }, {
-                        title: 'Name',
-                        align: 'center'
-                    }, {
-                        title: 'Image',
-                        align: 'center',
-                        width: 120
-                    }, {
-                        title: 'Description',
-                        align: 'center'
-                    }, {
-                        title: 'Action',
-                        align: 'center',
-                        width: 100
-                    }
-                    ]} />
+                    <Table
+                        dataSource={data}
+                        rowKey='id'
+                        columns={[{
+                            title: 'Number',
+                            align: 'center',
+                            width: 80,
+                            render(value, record, index) {
+                                return (
+                                    <>{index + 1}</>
+                                )
+                            }
+                        }, {
+                            title: 'Name',
+                            align: 'center',
+                            dataIndex: 'name'
+                        }, {
+                            title: 'Image',
+                            align: 'center',
+                            width: 120,
+                            render(value, record: any) {
+                                return (
+                                    <img className='medicineImg' src={defaultImg(record?.image)} alt={record?.name} />
+                                )
+                            },
+                        }, {
+                            title: 'Description',
+                            align: 'center',
+                            dataIndex: 'desc',
+                        }, {
+                            title: 'Action',
+                            align: 'center',
+                            width: 100,
+                            render(value, record, index) {
+                                return (
+                                    <> 
+                                    <Button type='primary' icon={< EditOutlined />} size='small' onClick={()=>{
+                                        setIsModalOpen(true)
+                                        Form.setFieldsValue(value)
+                                        }}/>
+                                    <Button type='primary' icon={< DeleteOutlined />} size='small' danger/>
+                                    </>
+                                )
+                            },
+                        }
+                        ]} />
                 </Space>
             </Card>
             <Modal title='Edit' open={isModalOpen} onOk={handleOk}
@@ -91,9 +118,14 @@ export default function MedicineCategory() {
                 destroyOnClose>
                 <Form
                     preserve={false}
-                    onFinish={(values) => {
-                        console.log(values);
+                    onFinish={async(values) => {
+                        // console.log(values);
+                        // message.success('saved')
+                        await InsertAPI(values)
                         message.success('saved')
+                        setIsModalOpen(false)
+                        //re-render page  useEffect hook
+                        setQuery({})
                     }}
                     labelCol={{ span: 6 }}
                     form={formData}
@@ -107,7 +139,7 @@ export default function MedicineCategory() {
                     <Form.Item label='Image'>
                         <MyUpload />
                     </Form.Item>
-                    <Form.Item label='Description' name='desc'>
+                    <Form.Item label='Description' name='desc' >
                         <Input.TextArea placeholder='please enter descriptions' />
                     </Form.Item>
                 </Form>

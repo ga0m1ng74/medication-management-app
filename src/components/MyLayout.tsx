@@ -152,6 +152,7 @@ const MyLayout = ({ children }: any) => {
             padding: 24,
             minHeight: 280,
             background: colorBgContainer,
+            overflow:'auto'
           }}
         >
           {children}
