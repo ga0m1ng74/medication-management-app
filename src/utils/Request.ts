@@ -12,6 +12,10 @@ export const getToken = () => sessionStorage.getItem('token')
  * server url
  */
 export const serverUrl = 'http://localhost:3006'
+/**
+ * upload url
+ */
+export const upLoadActionUrl = serverUrl+'/common/upload'
 
 const instance = axios.create({
     baseURL: serverUrl,

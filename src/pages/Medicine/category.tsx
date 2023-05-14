@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import MyUpload from '../../components/MyUpload'
-import { Card, Button, Form, Input, Table, Space, Modal, message } from 'antd'
+import { Card, Button, Form, Input, Table, Space, Modal, message, Pagination, Popconfirm } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
-import { loadDataAPI,InsertAPI,updateByIdAPI,deleteByIdAPI } from '../../service/medicine-categories'
+import { loadDataAPI, InsertAPI, updateByIdAPI, deleteByIdAPI } from '../../service/medicine-categories'
 import { defaultImg } from '../../utils/Img';
 
 
@@ -30,19 +30,36 @@ export default function MedicineCategory() {
      * this method can get form data on submit
      */
     const [formData] = Form.useForm()
-
+    /**
+     * this for updated categories data
+     * if id is empty for new data, others for update data
+     */
+    const [currentId, setCurrentId] = useState('')
+    //pagination 
+    const [total, setTotal] = useState(0)
+    /**
+     * image upload
+     */
+    const [imageUrl, setImageUrl] = useState<string>('');
     /**
      * listening query's change
      */
     useEffect(() => {
         loadDataAPI(query).then(result => {
             console.log(result)
-            setData(result.data?.list)
+            setData(result.data.list)
+            //set pagination total pages
+            setTotal(result.data.total)
         })
-        return () => {
-        }
     }, [query])
 
+    useEffect(() => {
+        if (!isModalOpen) {
+            //when Modal close reset data and image
+            setCurrentId('')
+            setImageUrl('')
+        }
+    }, [isModalOpen])
 
     return (
         <>
@@ -52,11 +69,12 @@ export default function MedicineCategory() {
                 }}></Button>
             </>}>
                 <Space direction='vertical' style={{ width: '100%' }}>
-                    <Form layout='inline' onFinish={(values) => {
-                        message.success('query success')
+                    <Form layout='inline' onFinish={(v) => {
+                        setQuery(v)
+                        // message.success('query success')
                     }}>
-                        <Form.Item label='Name'>
-                            <Input placeholder='please input keyword'></Input>
+                        <Form.Item label='Query' name='name'>
+                            <Input placeholder='please input keyword' allowClear></Input>
                         </Form.Item>
                         <Form.Item>
                             <Button type='primary' icon={<SearchOutlined />} htmlType='submit' />
@@ -96,19 +114,36 @@ export default function MedicineCategory() {
                             title: 'Action',
                             align: 'center',
                             width: 100,
-                            render(value, record, index) {
+                            render(value, record: any, index) {
                                 return (
-                                    <> 
-                                    <Button type='primary' icon={< EditOutlined />} size='small' onClick={()=>{
-                                        setIsModalOpen(true)
-                                        Form.setFieldsValue(value)
-                                        }}/>
-                                    <Button type='primary' icon={< DeleteOutlined />} size='small' danger/>
+                                    <>
+                                        <Button type='primary' icon={< EditOutlined />} size='small' onClick={() => {
+                                            setIsModalOpen(true)
+                                            setCurrentId(record.id)
+                                            setImageUrl(record.image)
+                                            formData.setFieldsValue(record)
+                                        }} />
+                                        <Popconfirm title='Delete?' onConfirm={async()=>{
+                                            await deleteByIdAPI(record.id)
+                                            //reload the page, useEffect hook
+                                            setQuery({})
+                                        }}>
+                                            <Button type='primary' icon={< DeleteOutlined />} size='small' danger />
+                                        </Popconfirm>
                                     </>
                                 )
                             },
                         }
-                        ]} />
+                        ]}
+                        pagination={{
+                            total, onChange(page) {
+                                setQuery({
+                                    ...query,
+                                    page,
+                                })
+                            }
+                        }}
+                    />
                 </Space>
             </Card>
             <Modal title='Edit' open={isModalOpen} onOk={handleOk}
@@ -118,10 +153,14 @@ export default function MedicineCategory() {
                 destroyOnClose>
                 <Form
                     preserve={false}
-                    onFinish={async(values) => {
-                        // console.log(values);
-                        // message.success('saved')
-                        await InsertAPI(values)
+                    onFinish={async (values) => {
+                        if (currentId) {
+                            //updated
+                            await updateByIdAPI(currentId, {...values,image:imageUrl})
+                        } else {
+                            //insert 
+                            await InsertAPI({...values,image:imageUrl})
+                        }
                         message.success('saved')
                         setIsModalOpen(false)
                         //re-render page  useEffect hook
@@ -137,7 +176,7 @@ export default function MedicineCategory() {
                         <Input placeholder='please enter a name' />
                     </Form.Item>
                     <Form.Item label='Image'>
-                        <MyUpload />
+                        <MyUpload imageUrl={imageUrl} setImageUrl={setImageUrl}/>
                     </Form.Item>
                     <Form.Item label='Description' name='desc' >
                         <Input.TextArea placeholder='please enter descriptions' />

@@ -27,14 +27,14 @@ export const InsertAPI = (data: any) => post('/admin/medicine_categories', data)
  * @param data 
  * @returns 
  */
-export const updateByIdAPI = (id: string, data: any) => patch('/admin/medicine_categories' + id, data)
+export const updateByIdAPI = (id: string, data: any) => patch('/admin/medicine_categories/' + id, data)
 
 /**
  * delete a medicine data by id
  * @param id 
  * @returns 
  */
-export const deleteByIdAPI = (id: string) => del('/admin/medicine_categories' + id)
+export const deleteByIdAPI = (id: string) => del('/admin/medicine_categories/' + id)
 
 /**
  * delete medicines data by ids, ids use ',' to separate
